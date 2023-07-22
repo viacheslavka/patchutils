@@ -1,0 +1,16 @@
+bin/patchsplit
+Build.PL
+lib/Patch.pm
+lib/Patch/Algo.pm
+lib/Patch/Parser.pm
+LICENSE
+MANIFEST			This list of files
+README.md
+t/01-compiles.t
+t/02-parse-buffer.t
+t/03-hunk.t
+t/04-parse-hunk.t
+t/05-patched-file.t
+t/06-algo-split.t
+t/07-algo-presplit.t
+t/08-file-manip.t
