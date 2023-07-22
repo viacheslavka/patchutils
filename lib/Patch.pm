@@ -12,6 +12,23 @@ sub new {
     }, $cls;
 };
 
+sub clone {
+    my ($self) = @_;
+
+    return bless {
+        $self->%*
+    }, ref $self;
+}
+
+sub normalize {
+    my ($self) = @_;
+
+    return bless {
+        mark => $self->{mark},
+        contents => $self->{contents} =~ s/^[+-]/ /r,
+    }, ref $self;
+}
+
 sub to_string {
     my ($self) = @_;
 
@@ -34,6 +51,8 @@ sub is_remove {
 }
 
 package Patch::Hunk;
+
+use List::Util qw(any);
 
 sub new {
     my ($cls, $old_start, $new_start, $context, $lines, $mark) = @_;
@@ -113,7 +132,16 @@ sub to_string {
     return join("\n", $header, map($_->to_string, $self->{lines}->@*)) . "\n";
 }
 
+sub nonempty {
+    my ($self) = @_;
+
+    return defined($self) && scalar($self->{lines}->@*) &&
+           any { $_->is_add() || $_->is_remove() } $self->{lines}->@*;
+};
+
 package Patch::PatchedFile;
+
+use List::Util qw(any);
 
 sub new {
     my ($cls, $mark, $old_prefix, $new_prefix,
@@ -175,13 +203,29 @@ sub to_string {
     return $result;
 };
 
+sub nonempty {
+    my ($self) = @_;
+
+    return scalar($self->{hunks}->@*) &&
+           any { $_->nonempty() } $self->{hunks}->@*;
+};
+
 package Patch;
+
+use List::Util qw(any);
 
 our $VERSION = '0.001';
 
 sub new {
     my ($cls, $files) = @_;
     return bless { files => $files }, $cls;
+};
+
+sub nonempty {
+    my ($self) = @_;
+
+    return scalar($self->{files}->@*) &&
+           any { $_->nonempty() } $self->{files}->@*;
 };
 
 1;
