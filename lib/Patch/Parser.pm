@@ -155,27 +155,32 @@ sub parse_patched_file {
     }
     # file names
     $line = $buf->read_line();
-    if ($line =~ /^--- (.+)$/) {
-        $old_name = $1;
+    if (defined($line)) {
+        if ($line =~ /^--- (.+)$/) {
+            $old_name = $1;
+        } else {
+            $buf->return_line($line);
+        }
     }
     $line = $buf->read_line();
-    if ($line =~ /^\+\+\+ (.+)$/) {
-        $new_name = $2;
+    if (defined($line)) {
+        if ($line =~ /^\+\+\+ (.+)$/) {
+            $new_name = $1;
+        } else {
+            $buf->return_line($line);
+        }
     }
-
-    $old_name = $header_old_name unless defined($old_name);
-    $new_name = $header_new_name unless defined($new_name);
 
     my $old_prefix = undef;
     my $new_prefix = undef;
 
-    if ($old_name =~ /([^\/]+?)\/(.+)/) {
+    if ($header_old_name =~ /([^\/]+?)\/(.+)/) {
         $old_prefix = $1;
-        $old_name = $2;
+        $old_name = (($old_name // '') eq '/dev/null') ? undef : $2;
     }
-    if ($new_name =~ /([^\/]+?)\/(.+)/) {
+    if ($header_new_name =~ /([^\/]+?)\/(.+)/) {
         $new_prefix = $1;
-        $new_name = $2;
+        $new_name = (($new_name // '') eq '/dev/null') ? undef : $2;
     }
 
     my @hunks;

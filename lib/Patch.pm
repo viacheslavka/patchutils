@@ -180,12 +180,14 @@ sub to_string {
 
     # Form git patch header
     $result = sprintf("diff --git %s/%s %s/%s\n",
-                      $self->{old_prefix}, $self->{old_name},
-                      $self->{new_prefix}, $self->{new_name});
+                      # at least one of (old_name, new_name) should exist in a real patch
+                      # and this header should not mention /dev/null
+                      $self->{old_prefix}, $self->{old_name} // $self->{new_name},
+                      $self->{new_prefix}, $self->{new_name} // $self->{old_name});
 
     # Leave important extended headers
-    if (defined($self->{old_mode} and defined($self->{new_mode}) and
-            $self->{old_mode} ne $self->{new_mode})) {
+    if (defined($self->{old_mode}) and defined($self->{new_mode}) and
+            $self->{old_mode} ne $self->{new_mode}) {
         $result .= "old mode $self->{old_mode}\n";
         $result .= "new mode $self->{new_mode}\n";
     }
@@ -199,16 +201,18 @@ sub to_string {
     }
 
     if (defined($self->{old_name}) and not defined($self->{new_name})) {
-        $result .= "deleted mode $self->{old_mode}";
+        $result .= "deleted file mode $self->{old_mode}\n";
     }
 
     if (not defined($self->{old_name}) and defined($self->{new_name})) {
-        $result .= "new file mode $self->{new_mode}";
+        $result .= "new file mode $self->{new_mode}\n";
     }
 
     # Form unified diff header
-    $result .= sprintf("--- %s\n", defined($self->{old_name}) ? "$self->{old_prefix}/$self->{old_name}" : '/dev/null');
-    $result .= sprintf("+++ %s\n", defined($self->{old_name}) ? "$self->{new_prefix}/$self->{new_name}" : '/dev/null');
+    if (scalar $self->{hunks}->@*) {
+        $result .= sprintf("--- %s\n", defined($self->{old_name}) ? "$self->{old_prefix}/$self->{old_name}" : '/dev/null');
+        $result .= sprintf("+++ %s\n", defined($self->{new_name}) ? "$self->{new_prefix}/$self->{new_name}" : '/dev/null');
+    }
 
     # Dump all hunks
     $result .= $_->to_string for $self->{hunks}->@*;
