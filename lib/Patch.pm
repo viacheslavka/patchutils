@@ -15,6 +15,9 @@ sub new {
 sub to_string {
     my ($self) = @_;
 
+    if (defined($self->{mark})) {
+        return '.' . $self->{mark} . $self->{contents};
+    }
     return $self->{contents};
 };
 
@@ -99,7 +102,8 @@ sub new_len {
 
 sub to_string {
     my ($self) = @_;
-    my $header = sprintf('@@ -%d,%d +%d,%d @@%s',
+    my $header = sprintf('%s@@ -%d,%d +%d,%d @@%s',
+                         $self->{mark} ? '.' . $self->{mark} : '',
                          $self->{old_start_line},
                          $self->old_len,
                          $self->{new_start_line},

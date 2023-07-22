@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests => 3;
+use Test::More tests => 6;
 
 use Patch;
 use Patch::Parser;
@@ -31,7 +31,7 @@ my @cases = (
 @@ -4,2 +4,3 @@ int test(const char *s) {
  a b c
  d e f
-.remove +g h i
+.remove+g h i
 ' => Patch::Hunk->new(4, 4, 'int test(const char *s) {',
                 [ Patch::Line->new(' a b c'),
                   Patch::Line->new(' d e f'),
@@ -41,6 +41,7 @@ my @cases = (
 
 for my ($input, $exp) (@cases) {
     $input =~ s/\A\s+//s;
-    $input =~ s/\s+\Z//s;
-    is_deeply(parse_hunk($input), $exp);
+    my $hunk = parse_hunk($input);
+    is_deeply($hunk, $exp);
+    is($hunk->to_string(), $input);
 }
