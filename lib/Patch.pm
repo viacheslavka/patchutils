@@ -50,6 +50,12 @@ sub is_remove {
     return $self->{contents} =~ /^-/;
 }
 
+sub clear_marks {
+    my ($self) = @_;
+
+    $self->{mark} = undef;
+}
+
 package Patch::Hunk;
 
 use List::Util qw(any);
@@ -139,6 +145,13 @@ sub nonempty {
            any { $_->is_add() || $_->is_remove() } $self->{lines}->@*;
 };
 
+sub clear_marks {
+    my ($self) = @_;
+
+    $self->{mark} = undef;
+    $_->clear_marks() for $self->{lines}->@*;
+}
+
 package Patch::PatchedFile;
 
 use List::Util qw(any);
@@ -210,6 +223,13 @@ sub nonempty {
            any { $_->nonempty() } $self->{hunks}->@*;
 };
 
+sub clear_marks {
+    my ($self) = @_;
+
+    $self->{mark} = undef;
+    $_->clear_marks() for $self->{hunks}->@*;
+}
+
 package Patch;
 
 use List::Util qw(any);
@@ -227,5 +247,17 @@ sub nonempty {
     return scalar($self->{files}->@*) &&
            any { $_->nonempty() } $self->{files}->@*;
 };
+
+sub to_string {
+    my ($self) = @_;
+
+    return join "\n", map $_->to_string, $self->{files}->@*;
+}
+
+sub clear_marks {
+    my ($self) = @_;
+
+    $_->clear_marks() for $self->{files}->@*;
+}
 
 1;

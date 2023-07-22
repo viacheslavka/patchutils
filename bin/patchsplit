@@ -1,0 +1,71 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use File::Temp qw(tempfile);
+use Patch;
+use Patch::Algo qw(split_prepatch split_patch);
+use Patch::Parser;
+
+my ($patch_file, @marks) = @ARGV;
+
+die "Need a patch name" unless defined $patch_file;
+
+my $fd = ();
+if ($patch_file ne '-') {
+    open $fd, '<', $patch_file;
+} else {
+    $fd = \*STDIN;
+}
+
+my $current_index = -1;
+for (0..$#marks) {
+    if ($marks[$_] eq '.') {
+        die 'Only one "." is allowed in the series' if $current_index != -1;
+        $current_index = $_;
+    }
+}
+if ($current_index == -1) {
+    die 'Current patch (".") must be a part of the marks series';
+}
+
+my $buf = Patch::Parser::Buffer->new($fd);
+my $patch = parse_patch $buf;
+close $fd;
+die "Failed to parse the original patch" unless defined $patch;
+
+my @process_order;
+for my $i (0..$#marks) {
+    if ($marks[$i] eq '.') {
+        @process_order = (@marks[0 .. $i], reverse @marks[$i + 1 .. $#marks]);
+    }
+}
+
+my %patches = ();
+my $split = \&split_prepatch;
+for my $mark (@process_order) {
+    if ($mark eq '.') {
+        $split = \&split_patch;
+        $patches{$mark} = $patch;
+        next;
+    }
+    my $part = $split->($patch, $mark);
+    if (defined($part) && $part->nonempty()) {
+        $part->clear_marks();
+        $patches{$mark} = $part;
+    }
+}
+
+$patch->clear_marks();
+
+for my $mark (@marks) {
+    my $patch = $patches{$mark};
+
+    if (defined($patch) && $patch->nonempty()) {
+        my ($fh, $filename) = tempfile();
+        print "$filename $mark\n";
+        print $fh $patch->to_string();
+        close $fh;
+    }
+}
