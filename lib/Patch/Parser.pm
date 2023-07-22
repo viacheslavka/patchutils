@@ -82,7 +82,7 @@ sub parse_hunk {
 
     my @lines;
     while ($line = $buf->read_line()) {
-        unless ($line =~ /^(?:\.(\w+)\s*)?([ +-].*?)$/) {
+        unless ($line =~ /^(?:\.(\w+)\s*?)?([ +-]+?.*?)$/) {
             $buf->return_line($line);
             last;
         }
