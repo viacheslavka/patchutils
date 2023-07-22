@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests => 6;
+use Test::More tests => 8;
 
 use Patch;
 use Patch::Parser;
@@ -37,6 +37,16 @@ my @cases = (
                   Patch::Line->new(' d e f'),
                   Patch::Line->new('+g h i', 'remove'),
                 ]),
+'
+.hunk@@ -4,2 +4,3 @@ int test(const char *s) {
+ a b c
+ d e f
+.remove+g h i
+' => Patch::Hunk->new(4, 4, 'int test(const char *s) {',
+                [ Patch::Line->new(' a b c'),
+                  Patch::Line->new(' d e f'),
+                  Patch::Line->new('+g h i', 'remove'),
+                ], 'hunk'),
 );
 
 for my ($input, $exp) (@cases) {

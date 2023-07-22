@@ -67,7 +67,7 @@ sub parse_hunk {
     my $context;
 
 
-    if ($line =~ /^(?:\.(\w+) )?@@ -(\d+),(\d+) \+(\d+),(\d+) @@(?: (.+?))?$/)
+    if ($line =~ /^(?:\.(\w+)\s*)?@@ -(\d+),(\d+) \+(\d+),(\d+) @@(?: (.+?))?$/)
     {
         $mark = $1;
         $old_start = $2;
@@ -181,9 +181,6 @@ sub parse_patched_file {
     my @hunks;
     while ($line = $buf->read_line()) {
         $buf->return_line($line);
-        if ($line !~ /^@@/) {
-            last;
-        }
         my $hunk = parse_hunk($buf);
         if (defined($hunk)) {
             push @hunks, $hunk;
