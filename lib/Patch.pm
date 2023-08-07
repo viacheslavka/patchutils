@@ -179,7 +179,8 @@ sub to_string {
     my $result;
 
     # Form git patch header
-    $result = sprintf("diff --git %s/%s %s/%s\n",
+    $result = sprintf("%sdiff --git %s/%s %s/%s\n",
+                      $self->{mark} ? ".$self->{mark} " : '',
                       # at least one of (old_name, new_name) should exist in a real patch
                       # and this header should not mention /dev/null
                       $self->{old_prefix}, $self->{old_name} // $self->{new_name},

@@ -113,7 +113,7 @@ sub parse_patched_file {
     my $new_name;
 
     # diff header
-    if ($header =~ /(?:(\.\w+) )?diff --git ((?:\S|\\ )+) ((?:\S|\\ )+)/) {
+    if ($header =~ /(?:\.(\w+) )?diff --git ((?:\S|\\ )+) ((?:\S|\\ )+)/) {
         $mark = $1;
         $header_old_name = $2 =~ s/\\ / /r;
         $header_new_name = $3 =~ s/\\ / /r;
