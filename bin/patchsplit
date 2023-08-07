@@ -51,7 +51,7 @@ for my $mark (@process_order) {
         next;
     }
     my $part = $split->($patch, $mark);
-    if (defined($part) && $part->nonempty()) {
+    if (defined($part)) {
         $part->clear_marks();
         $patches{$mark} = $part;
     }
@@ -62,7 +62,7 @@ $patch->clear_marks();
 for my $mark (@marks) {
     my $patch = $patches{$mark};
 
-    if (defined($patch) && $patch->nonempty()) {
+    if (defined($patch)) {
         my ($fh, $filename) = tempfile();
         print "$filename $mark\n";
         print $fh $patch->to_string();
